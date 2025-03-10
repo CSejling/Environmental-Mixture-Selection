@@ -478,6 +478,8 @@ event <- "ASTHMA_H"
 
 # The entropy rank agreement method:
 
+# We carry out invididual selections:
+
 try.result <- iLassoBoot(jsurvdata, socios = socios, pollutants = pollutants, event = "ASTHMA_H")
 
 for (i in 2:nTry){
@@ -496,7 +498,7 @@ for (i in 1:nTry){
   
 }
 
-#
+# We compute orders lists from the generated selections:
 
 orders.result <- rank.assignment(pollutants, try.result)
 
@@ -508,7 +510,7 @@ for (i in 1:length(try.NA)){
   
 }
 
-# Now for the depth estimation part
+# Now for the depth estimation part:
 
 e.result <- rankEntropy(d = ncol(orders.result), ranks = orders.result, P = 1000)
 
@@ -526,7 +528,8 @@ e.NA.dl <- e.NA.mean - 1.96*e.NA.sd
 
 d.raw.era <- which(e.result > e.NA.dl)[1] - 1
 
-# Collection set and so on... (not adjusting for shadow tau)... Showing persistence of features with plots.
+
+# Based on the depth estimate we select the final predictors:
 
 if (length(d.raw.era) == 0) { d.raw.era = length(e.result) }
 if (is.na(d.raw.era)) { d.raw.era = length(e.result)}
@@ -585,17 +588,11 @@ if (d.raw.era >0){
   
 }
 
-if (d.raw.era == 0){ 
-  
-  final_counts <- NA 
-  final_choice <- NA
-  marginal.era <- NA
-  marginal.era.pre <- NA
-  
-}
+# The object marginal.era now contains the selected predictors with entropy based variable selection.
 
 
-# Now with the sequential rank agreement (for the same underlying bootstraps!)
+# Now with the sequential rank agreement instead of the entropy rank agreement:
+# This is a different way of estimating the depth.
 
 sra.result <- sra(object = t(orders.result), B = 1000)
 
@@ -612,6 +609,8 @@ sra.NA.sd <- colSds(sra.NA)
 sra.NA.dl <- sra.NA.mean - 1.96*sra.NA.sd
 
 d.raw.sra <- which(sra.result > sra.NA.dl)[1] - 1
+
+# With the sequential rank agreement depth estimate we construct the predictor selection set:
 
 if (length(d.raw.sra) == 0){ d.raw.sra = length(sra.result)}
 if (is.na(d.raw.sra)) { d.raw.sra = length(sra.result)}
@@ -669,18 +668,12 @@ if (d.raw.sra > 0){
   
 }
 
-if (d.raw.sra == 0){ 
-  
-  final_counts_sra <- NA
-  final_choice_sra <- NA
-  marginal.sra <- NA
-  marginal.sra.pre <- NA
-  
-  
-}
+# The object marginal.sra now contains the selected predictors with variance based variable selection.
 
 
-# Single free lasso:
+# Application of basic methods:
+
+# A single free lasso:
 
 datamatrix <- as.matrix(jsurvdata[,c(socios,pollutants)])
 name.select <- pairwise.name.generator(pollutants)
@@ -708,7 +701,7 @@ beta_select_free <- lasso_model$beta[,which.min(AIC)]
 beta_select_free <- names(beta_select_free)[names(beta_select_free) %in% pairwise.name.generator(pollutants)]
 
 
-# Single hierarchical lasso:
+# A single hierarchical lasso:
 
 datamatrix <- as.matrix(jsurvdata[,c(socios,pollutants)])
 name.select <- pairwise.name.generator(pollutants)
