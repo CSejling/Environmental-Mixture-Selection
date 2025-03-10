@@ -1,3 +1,6 @@
+# This script contains dependencies and functions that are necessary for doing entropy based rank agreement selection.
+# Towards the end of the script we compute a selection set with the entropy rank agreement selection method.
+# For illustration we do the same with the sequential rank agreement and we give examples of how to use the free lasso and the hierarchical lasso on the same data.
 
 library(survival)
 library(Matrix)
